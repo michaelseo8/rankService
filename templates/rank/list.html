@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foundation for Sites</title>
+    <title>네이버 쇼핑 순위 검색</title>
     <link rel="stylesheet" href="../static/assets/css/foundation.css">
   </head>
 <body>
@@ -24,20 +24,38 @@
     <div class="large-8 medium-8 cell">
         <div class="grid-x grid-padding-x">
             <div class="large-12 cell">
+                <form action="/rank/" method="post" id="searchRank">
+                    {% csrf_token %}
+                    <div class="callout">
+                        <div class="grid-x grid-padding-x">
+                            <div class="large-4 medium-4 cell">
+                                <input name="keyword" type="text" placeholder="키워드" value="{{ form.keyword }}" />
+                            </div>
+                            <div class="large-4 medium-4 cell">
+                                <input name="company" type="text" placeholder="회사명" value="{{ form.company }}" />
+                            </div>
+                            <div class="large-4 medium-4 cell">
+                                <a href="javascript:{}" onclick="document.getElementById('searchRank').submit();" class="button">네이버 쇼핑 순위 검색</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="large-8 medium-8 cell">
+        <div class="grid-x grid-padding-x">
+        {% for rank in ranks %}
+            <div class="large-12 cell">
                 <div class="callout">
                     <div class="grid-x grid-padding-x">
-                        <div class="large-4 medium-4 cell">
-                            <input type="text" placeholder="키워드" />
-                        </div>
-                        <div class="large-4 medium-4 cell">
-                            <input type="text" placeholder="회사명" />
-                        </div>
-                        <div class="large-4 medium-4 cell">
-                            <a href="#" class="button">네이버 쇼핑 순위 검색</a>
-                        </div>
+                        <div class="large-2 medium-2 cell"><img src="{{ rank.imageurl }}" /></div>
+                        <div class="large-2 medium-2 cell">{{ rank.rank }}위</div>
+                        <div class="large-8 medium-2 cell">{{ rank.title }}</div>
                     </div>
                 </div>
             </div>
+        {% endfor %}
         </div>
     </div>
 </div>

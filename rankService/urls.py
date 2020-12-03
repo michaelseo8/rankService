@@ -17,8 +17,10 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
 
+from rankService.rank.views import RankListView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('rank/', TemplateView.as_view(template_name="rank/list.html")),
+    path('rank/', RankListView.as_view()),
     path('', TemplateView.as_view(template_name="index.html")),
 ]
