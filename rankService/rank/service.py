@@ -1,11 +1,50 @@
 import json
 import urllib
+import sqlite3
 
 from bs4 import BeautifulSoup
 
 import requests
 
 from rankService.rank.rank import Rank
+
+
+def updateRankList(keyword, company, ranks):
+    selectConn = sqlite3.connect('./db.sqlite3', timeout = 10)
+    query = "SELECT * FROM keyword WHERE keyword = ? AND company = ? LIMIT 1"
+    selectCur = selectConn.cursor()
+    selectCur.execute(query,(keyword, company))
+    keywordRaw = selectCur.fetchone()
+    selectConn.commit()
+    selectCur.close()
+    selectConn.close()
+
+    keywordId = None
+
+    # keyword insert
+    if not keywordRaw:
+        insertConn = sqlite3.connect('./db.sqlite3', timeout=10)
+        insertCur = insertConn.cursor()
+        # keyword + company INSERT
+        query = "INSERT INTO keyword (keyword, company, createdAt, updatedAt) values (?, ?, datetime('now'), datetime('now'))"
+        insertCur.execute(query, (keyword, company))
+        keywordId = insertCur.lastrowid
+        insertConn.commit()
+        insertCur.close()
+        insertConn.close()
+
+    else:
+        keywordId = keywordRaw[0]
+
+    # rank_history insert
+    updateConn = sqlite3.connect('./db.sqlite3', timeout=10)
+    updateCur = updateConn.cursor()
+    for rank in ranks:
+        query = "INSERT INTO rank_history (keywordId, rank, createdAt, updatedAt) values (?, ?, datetime('now'), datetime('now'))"
+        updateCur.execute(query, (keywordId, rank.rank))
+        updateConn.commit()
+    updateCur.close()
+    updateConn.close()
 
 
 def buildRankList(keyword, company):
