@@ -19,9 +19,7 @@ class RankListView(TemplateView):
         keyword = request.POST.get('keyword')
         company = request.POST.get('company')
         ranks = buildRankList(keyword, company)
+        if ranks:
+            updateRankList(keyword, company, ranks)
         ctx = {"keyword": keyword, "company": company, "ranks": ranks}
-
-        # if ranks:
-        updateRankList(keyword, company, ranks)
-
         return self.render_to_response(ctx)  # TemplateView 에서 제공하는 함수로, 위에 선언한 템플릿에 ctx 라 데이타를 전달하여 렌더링(HTML을 그림) 한다.

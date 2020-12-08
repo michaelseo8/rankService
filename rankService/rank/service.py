@@ -11,7 +11,7 @@ from rankService.rank.rank import Rank
 
 def updateRankList(keyword, company, ranks):
     selectConn = sqlite3.connect('./db.sqlite3', timeout = 10)
-    query = "SELECT * FROM keyword WHERE keyword = ? AND company = ? LIMIT 1"
+    query = "SELECT keywordId FROM keyword WHERE keyword = ? AND company = ? LIMIT 1"
     selectCur = selectConn.cursor()
     selectCur.execute(query,(keyword, company))
     keywordRaw = selectCur.fetchone()
@@ -36,6 +36,20 @@ def updateRankList(keyword, company, ranks):
     else:
         keywordId = keywordRaw[0]
 
+    # latestRank 구하기
+    latestRank = None
+    selectConn = sqlite3.connect('./db.sqlite3', timeout=10)
+    query = "SELECT rank FROM rank_history WHERE keywordId = ? ORDER BY rankHistoryId DESC LIMIT 1"
+    selectCur = selectConn.cursor()
+    selectCur.execute(query, (keywordId,))
+    rankHistoryRaw = selectCur.fetchone()
+    selectConn.commit()
+    selectCur.close()
+    selectConn.close()
+
+    if rankHistoryRaw:
+        latestRank = rankHistoryRaw[0]
+
     # rank_history insert
     updateConn = sqlite3.connect('./db.sqlite3', timeout=10)
     updateCur = updateConn.cursor()
@@ -43,6 +57,8 @@ def updateRankList(keyword, company, ranks):
         query = "INSERT INTO rank_history (keywordId, rank, createdAt, updatedAt) values (?, ?, datetime('now'), datetime('now'))"
         updateCur.execute(query, (keywordId, rank.rank))
         updateConn.commit()
+        rank.latestRank = latestRank
+
     updateCur.close()
     updateConn.close()
 
