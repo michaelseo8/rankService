@@ -7,3 +7,4 @@ class Rank:
         self.title = title
         self.productid = productid
         self.latestRank = None
+        self.latestSearchDate = None

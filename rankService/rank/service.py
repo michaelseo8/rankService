@@ -10,46 +10,55 @@ from rankService.rank.rank import Rank
 
 
 def updateRankList(keyword, company, ranks):
-    selectConn = sqlite3.connect('./db.sqlite3', timeout = 10)
+    # 1. 키워드 + 회사명으로 저장된 정보가 있는지 확인 (SELECT). 없을 경우 keyword 테이블에 (INSERT)
+    # 2. 해당 키워드 조합으로 최근 검색된 순위 정보가 있느지 확인 (SELECT), 있을 경우 최근 순위(latestRank) 에 저장.
+    # 3. 키워드 + 회사명으로 네이버로 부터 받아온 최신 순위 정보를 rank_history 테이블에 저장 (INSERT)
+
+    # 1.
+    selectConn = sqlite3.connect('./db.sqlite3', timeout=10)  # oracle, mysql, etc....
     query = "SELECT keywordId FROM keyword WHERE keyword = ? AND company = ? LIMIT 1"
     selectCur = selectConn.cursor()
-    selectCur.execute(query,(keyword, company))
-    keywordRaw = selectCur.fetchone()
+    selectCur.execute(query, (keyword, company))  # SELECT 쿼리를 실행!
+    keywordRow = selectCur.fetchone()
     selectConn.commit()
     selectCur.close()
     selectConn.close()
 
     keywordId = None
 
-    # keyword insert
-    if not keywordRaw:
+    # 검색어 테이블에 없을 경우 입력
+    if not keywordRow:  # 해당 keyword + company 로 처음 검색했을 경우
         insertConn = sqlite3.connect('./db.sqlite3', timeout=10)
         insertCur = insertConn.cursor()
         # keyword + company INSERT
         query = "INSERT INTO keyword (keyword, company, createdAt, updatedAt) values (?, ?, datetime('now'), datetime('now'))"
-        insertCur.execute(query, (keyword, company))
-        keywordId = insertCur.lastrowid
+        insertCur.execute(query, (keyword, company))  # INSERT 쿼리를 실행!
+        keywordId = insertCur.lastrowid  # 방금 입력된 keywordId 반환
         insertConn.commit()
         insertCur.close()
         insertConn.close()
+    # 검색어 테이블에 있을 경우 해당 데이타 사용
+    else:  # 해당 keyword + company 로 검색한 내역이 있을 경우
+        keywordId = keywordRow[0]
 
-    else:
-        keywordId = keywordRaw[0]
-
+    # 2.
     # latestRank 구하기
-    latestRank = None
     selectConn = sqlite3.connect('./db.sqlite3', timeout=10)
-    query = "SELECT rank FROM rank_history WHERE keywordId = ? ORDER BY rankHistoryId DESC LIMIT 1"
+    query = "SELECT rank, updatedAt FROM rank_history WHERE keywordId = ? ORDER BY rankHistoryId DESC LIMIT 1"  # 기존에 조회했던 순위 기록중 가장 최신의 것을 불러온다.
     selectCur = selectConn.cursor()
-    selectCur.execute(query, (keywordId,))
-    rankHistoryRaw = selectCur.fetchone()
+    selectCur.execute(query, (keywordId,))  # 순위검색 SELECT 쿼리 실행!
+    rankHistoryRow = selectCur.fetchone()  # 가장 최근 순위 정보. (첫 검색일 경우 없다!)
     selectConn.commit()
     selectCur.close()
     selectConn.close()
 
-    if rankHistoryRaw:
-        latestRank = rankHistoryRaw[0]
+    latestRank = None
+    latestSearchDate = None
 
+    if rankHistoryRow:
+        latestRank = rankHistoryRow[0]
+        latestSearchDate = rankHistoryRow[1]
+    # 3.
     # rank_history insert
     updateConn = sqlite3.connect('./db.sqlite3', timeout=10)
     updateCur = updateConn.cursor()
@@ -58,6 +67,7 @@ def updateRankList(keyword, company, ranks):
         updateCur.execute(query, (keywordId, rank.rank))
         updateConn.commit()
         rank.latestRank = latestRank
+        rank.latestSearchDate = latestSearchDate
 
     updateCur.close()
     updateConn.close()
