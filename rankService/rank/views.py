@@ -3,15 +3,6 @@
 from django.views.generic import TemplateView
 from rankService.rank.service import buildRankList, updateRankList
 
-
-
-class Vekjwiewele(TemplateView):
-    def get(self, request, *args, **kwargs):
-        pass
-    def post(self):
-
-        pass
-
 # class 선언시 클래스명 뒤에 () 안에 오는 또 다른 클래스는 ()안에 클래스를 '상속' 받아서 사용한다는 뜻
 class RankListView(TemplateView):
     # TemplateView 에 이미 선언되어 있음
