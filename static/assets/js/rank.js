@@ -1,6 +1,18 @@
 
 let PROCESSING = false;
 
+function showProcessing() {
+    let keyword = $('#keyword').val();
+    let company = $('#company').val();
+    $('#contentsDiv').html("<div class=\"large-12 cell\">\n" +
+                        "                <div class=\"callout\">\n" +
+                        "                    <div class=\"grid-x grid-padding-x\">\n" +
+                        "                        <div class=\"large-8 medium-2 cell\">&nbsp;&nbsp;<i>"+ keyword +"</i> 중 <b>"+  company +"</b> 검색중입니다.</div>\n" +
+                        "                    </div>\n" +
+                        "                </div>\n" +
+                        "            </div>");
+}
+
 $(document).ready(function() {
     $('#searchBtn').click(function(event) {
         let keyword = $('#keyword').val();
@@ -9,6 +21,9 @@ $(document).ready(function() {
             alert('현재 처리중입니다...');
         } else {
             PROCESSING = true;
+
+            showProcessing();
+
             $.ajax({
                 url:'/rank/search?keyword='+ keyword +'&company=' + company,
                 dataType:'json',
