@@ -35,6 +35,7 @@ class RankListView(TemplateView):
 def rankDataProvider(request):
     keyword = request.GET.get('keyword')
     company = request.GET.get('company')
+
     # # 네이버API 를 통해 해당 keyword로 검색된 결과중 company 와 일치하는 가장 높은 순위 1개 결과 반환.
     ranks = {}
     if keyword and company:

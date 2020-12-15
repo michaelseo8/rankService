@@ -4,6 +4,7 @@ let PROCESSING = false;
 function showProcessing() {
     let keyword = $('#keyword').val();
     let company = $('#company').val();
+
     $('#contentsDiv').html("<div class=\"large-12 cell\">\n" +
                         "                <div class=\"callout\">\n" +
                         "                    <div class=\"grid-x grid-padding-x\">\n" +
@@ -13,23 +14,8 @@ function showProcessing() {
                         "            </div>");
 }
 
-$(document).ready(function() {
-    $('#searchBtn').click(function(event) {
-        let keyword = $('#keyword').val();
-        let company = $('#company').val();
-        if (PROCESSING) {
-            alert('현재 처리중입니다...');
-        } else {
-            PROCESSING = true;
-
-            showProcessing();
-
-            $.ajax({
-                url:'/rank/search?keyword='+ keyword +'&company=' + company,
-                dataType:'json',
-                success:function(rank) {
-                    PROCESSING = false;
-                    $('#contentsDiv').html("<div class=\"large-12 cell\">\n" +
+function makeRankRowTag(rank) {
+    $('#contentsDiv').html("<div class=\"large-12 cell\">\n" +
                         "                <div class=\"callout\">\n" +
                         "                    <div class=\"grid-x grid-padding-x\">\n" +
                         "                        <div class=\"large-2 medium-2 cell\"><img src=\""+ rank.imageurl +"\" /></div>\n" +
@@ -38,13 +24,46 @@ $(document).ready(function() {
                         "                    </div>\n" +
                         "                </div>\n" +
                         "            </div>");
-                },
-                error:function() {
-                    alert('검색실패!');
-                    PROCESSING = false;
-                }
-            })
+}
+
+function requestRankData() {
+    let keyword = $('#keyword').val();
+    let company = $('#company').val();
+    if (PROCESSING) {
+        alert('현재 처리중입니다...');
+    } else {
+
+        if (keyword == '' || company == '') {
+            alert("검색어를 입력해 주세요!");
+            return;
         }
+        PROCESSING = true;
+
+        showProcessing();
+
+        $.ajax({
+            url:'/rank/search?keyword='+ keyword +'&company=' + company,
+            dataType:'json',
+            success:function(rank) {
+                PROCESSING = false;
+                makeRankRowTag(rank);
+            },
+            error:function() {
+                PROCESSING = false;
+                alert('검색실패!');
+            }
+        })
+    }
+}
+
+$(document).ready(function() {
+    $('#searchBtn').click(requestRankData);
+    $('#company').keydown(function(event) {
+
+        if (event.which == 13) {
+            requestRankData();
+        }
+
     });
 });
 
